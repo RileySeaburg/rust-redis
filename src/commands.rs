@@ -172,3 +172,29 @@ pub fn handle_set(v: Vec<Value>) -> Result<Value, Value> {
     }
     Ok(Value::String("OK".to_string()))
 }
+
+pub fn delete_set(v: Vec<Value>) -> Result<Value, Value> {
+    // Declare a value to store the response.
+    let v = v.iter().skip(1).collect::<Vec<_>>();
+    // If the parameter is empty, or the parameters are less than two,
+    // return an error message.
+    if v.is_empty() || v.len() < 2 {
+        return Err(Value::Error(
+            "ERR wrong number of arguments for 'SET' command. Expected at least two arguments."
+                .to_owned(),
+        ));
+    }
+    // Match the parameter.
+    match (&v[0], &v[1]) {
+        (Value::Bulk(k), Value::Bulk(v)) => {
+            // Create a database reference.
+            let _ = RUDIS_DB
+                .lock()
+                .unwrap()
+                .remove(k);
+        }
+        _ => unimplemented!("SET not implemented for {:?}", v),
+        // Return an ok message.
+    }
+    Ok(Value::String("OK".to_string()))
+}
